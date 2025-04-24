@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BMEcat to ETIM xChange Converter (XML to JSON)</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        
+        .dropzone {
+            border: 2px dashed #ccc;
+            border-radius: 4px;
+            padding: 40px;
+            text-align: center;
+            margin: 30px 0;
+            transition: border-color 0.3s ease;
+        }
+        
+        .dropzone.highlight {
+            border-color: #007bff;
+        }
+        
+        .dropzone p {
+            margin: 0;
+            font-size: 18px;
+            color: #666;
+        }
+        
+        #file-input {
+            display: none;
+        }
+        
+        .browse-btn {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 20px;
+            font-size: 16px;
+        }
+        
+        .browse-btn:hover {
+            background-color: #0069d9;
+        }
+        
+        #status {
+            margin-top: 20px;
+            padding: 10px;
+            border-radius: 4px;
+            display: none;
+        }
+        
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        
+        .processing {
+            background-color: #e2f3f5;
+            color: #0c5460;
+        }
+    </style>
+</head>
+<body>
+    <h1>BMEcat to xChange Converter</h1>
+    <p>Upload XML file to convert it to JSON</p>
+    
+    <div id="drop-zone" class="dropzone">
+        <p>Drag and drop your XML file here</p>
+        <p>or</p>
+        <input type="file" id="file-input" accept=".xml,.XML">
+        <button class="browse-btn" onclick="document.getElementById('file-input').click()">Browse Files</button>
+    </div>
+    
+    <div id="status"></div>
+    
+    <script>
+        const dropZone = document.getElementById('drop-zone');
+        const fileInput = document.getElementById('file-input');
+        const statusDiv = document.getElementById('status');
+        
+        // Prevent default drag behaviors
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, preventDefaults, false);
+            document.body.addEventListener(eventName, preventDefaults, false);
+        });
+        
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+        
+        // Highlight drop zone when item is dragged over it
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropZone.addEventListener(eventName, highlight, false);
+        });
+        
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, unhighlight, false);
+        });
+        
+        function highlight() {
+            dropZone.classList.add('highlight');
+        }
+        
+        function unhighlight() {
+            dropZone.classList.remove('highlight');
+        }
+        
+        // Handle dropped files
+        dropZone.addEventListener('drop', handleDrop, false);
+        
+        function handleDrop(e) {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            handleFiles(files);
+        }
+        
+        fileInput.addEventListener('change', function() {
+            handleFiles(this.files);
+        });
+        
+        function handleFiles(files) {
+            if (files.length > 0) {
+                const file = files[0];
+                const extension = file.name.split('.').pop().toLowerCase();
+                
+                if (extension !== 'xml') {
+                    statusDiv.textContent = 'Error: Only XML files are accepted.';
+                    statusDiv.className = 'error';
+                    statusDiv.style.display = 'block';
+                    return;
+                }
+                
+                uploadFile(file);
+            }
+        }
+        
+        function uploadFile(file) {
+            const formData = new FormData();
+            formData.append('file', file);
+            
+            statusDiv.textContent = 'Uploading...';
+            statusDiv.className = 'processing';
+            statusDiv.style.display = 'block';
+            
+            fetch('/convert', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(data => {
+                        throw new Error(data.detail || 'Unknown error occurred');
+                    });
+                }
+                
+                // Change status to Processing file...
+                statusDiv.textContent = 'Processing file...';
+                
+                // Get filename from Content-Disposition header if available
+                const contentDisposition = response.headers.get('Content-Disposition');
+                let filename = file.name.replace(/\.xml$/i, '.json');
+                if (contentDisposition) {
+                    const filenameMatch = contentDisposition.match(/filename="(.+)"/);
+                    if (filenameMatch) {
+                        filename = filenameMatch[1];
+                    }
+                }
+                
+                return response.blob().then(blob => {
+                    // Create download link
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.style.display = 'none';
+                    a.href = url;
+                    a.download = filename;
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                    
+                    statusDiv.textContent = 'BMEcat XML successfully converted to xChange JSON';
+                    statusDiv.className = 'success';
+                });
+            })
+            .catch(error => {
+                statusDiv.textContent = 'Error: ' + error.message;
+                statusDiv.className = 'error';
+                console.error('Error:', error);
+            });
+        }
+    </script>
+</body>
+</html>
