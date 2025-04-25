@@ -2,17 +2,19 @@ FROM python:3.13-slim
 
 WORKDIR /app
 
+# Create a non-root user earlier in the process
+RUN adduser --disabled-password --gecos '' appuser
+
 COPY requirements.txt .
 
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY . .
+# Create templates directory with proper ownership
+RUN mkdir -p templates && chown -R appuser:appuser /app
 
-# Create templates directory if it doesn't exist
-RUN mkdir -p templates
+# Copy application files and fix permissions
+COPY --chown=appuser:appuser . .
 
-# Create a non-root user to run the app
-RUN adduser --disabled-password --gecos '' appuser
 USER appuser
 
 EXPOSE 5000
