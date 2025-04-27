@@ -3,6 +3,18 @@ services:
     build: .
     ports:
       - "5000:5000"
-    volumes:
-      - ./:/app
+    # The volume mount is useful for development but should typically be removed
+    # for production builds managed by PaaS like Coolify, as the code
+    # should be baked into the image via the Dockerfile COPY command.
+    #volumes:
+    #  - ./:/app
     restart: unless-stopped
+    healthcheck:
+      # Command to run inside the container to check health.
+      # Uses wget (often present in slim images) to perform a quick check on the root endpoint.
+      # Exits with 1 (unhealthy) if wget fails.
+      test: ["CMD-SHELL", "wget --quiet --tries=1 --spider http://localhost:5000/ || exit 1"]
+      interval: 30s    # How often to run the check
+      timeout: 10s     # How long to wait for the check to return
+      retries: 3       # How many consecutive failures trigger 'unhealthy' status
+      start_period: 15s # Grace period after container start before failures count
