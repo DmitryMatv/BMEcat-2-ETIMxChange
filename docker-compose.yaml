@@ -3,15 +3,6 @@ services:
     build: .
     ports:
       - "5000:5000"
-    # The volume mount is useful for development but should typically be removed
-    # for production builds managed by PaaS like Coolify, as the code
-    # should be baked into the image via the Dockerfile COPY command.
     #volumes:
     #  - ./:/app
     restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:5000/"]
-      interval: 30s     # How often to run the check
-      timeout: 10s     # How long to wait for the check to return
-      retries: 3      # How many consecutive failures trigger 'unhealthy' status
-      start_period: 15s # Grace period after container start before failures count
