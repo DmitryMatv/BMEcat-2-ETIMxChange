@@ -10,11 +10,8 @@ services:
     #  - ./:/app
     restart: unless-stopped
     healthcheck:
-      # Command to run inside the container to check health.
-      # Uses wget (often present in slim images) to perform a quick check on the root endpoint.
-      # Exits with 1 (unhealthy) if wget fails.
-      test: ["CMD-SHELL", "wget --quiet --tries=1 --spider http://localhost:5000/ || exit 1"]
-      interval: 30s    # How often to run the check
+      test: ["CMD", "curl", "-f", "http://localhost:5000/"]
+      interval: 30s     # How often to run the check
       timeout: 10s     # How long to wait for the check to return
-      retries: 3       # How many consecutive failures trigger 'unhealthy' status
+      retries: 3      # How many consecutive failures trigger 'unhealthy' status
       start_period: 15s # Grace period after container start before failures count
