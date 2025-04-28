@@ -24,11 +24,15 @@ app = FastAPI(title="BMEcat to ETIM xChange Converter")
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
-# Set up templates
-templates = Jinja2Templates(directory="templates")
+
+BASE_DIR = Path(__file__).parent
+
+# Set up templates directory
+templates = Jinja2Templates(directory=BASE_DIR / "templates")
 
 # Mount static files directory
-app.mount("/static", StaticFiles(directory="static"), name="static")  # Add this line
+app.mount("/static", StaticFiles(directory=BASE_DIR / "static"), name="static")
+
 
 # Define temp directory for file uploads
 UPLOAD_DIR = Path(tempfile.gettempdir())
@@ -83,10 +87,10 @@ async def convert(
     if file.size > MAX_FILE_SIZE:
         raise HTTPException(400, "File too large (max 50 MB)")
 
-    # Securely save the file
-    filename = "".join(
-        c for c in file.filename if c.isalnum() or c in "._- "
-    )  # Simple secure_filename
+    # Use secure_filename for better sanitization
+    from werkzeug.utils import secure_filename
+    filename = secure_filename(file.filename)
+    
     input_path = os.path.join(UPLOAD_DIR, filename)
     output_filename = f"{os.path.splitext(filename)[0]}.json"
     output_path = os.path.join(UPLOAD_DIR, output_filename)

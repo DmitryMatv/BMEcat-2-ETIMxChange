@@ -1,0 +1,626 @@
+{
+"$schema": "https://json-schema.org/draft/2020-12/schema",
+"$id": "https://www.etim-international.com/xChange/11",
+"title": "ETIM xChange V1.1",
+"type":"object",
+"additionalProperties": false,
+"required": ["CatalogueId", "CatalogueType", "CatalogueValidityStart", "Language", "Supplier"],
+"properties":{
+    "CatalogueId":{"type":"string", "minLength":1, "maxLength":20},
+    "CatalogueName":{"type":"array","items":{
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["CatalogueName"],
+        "properties":{
+            "Language":{"type":"string", "pattern":"^[a-z]{2}[-][A-Z]{2}$"},
+            "CatalogueName":{"type":"string", "minLength":1, "maxLength":100}}}},
+    "CatalogueVersion":{"type":"string", "minLength":1, "maxLength":50},
+    "ContractReferenceNumber":{"type":"string", "minLength":1, "maxLength":20},
+    "CatalogueType":{"type":"string", "enum":["FULL", "CHANGE"]},
+    "ChangeReferenceCatalogueVersion":{"type":"string", "minLength":1, "maxLength":50},
+    "GenerationDate":{"type":"string", "format":"date"},
+    "NameDataCreator":{"type":"string", "minLength":1, "maxLength":50},
+    "EmailDataCreator":{"type":"string", "format":"email"},
+    "BuyerName":{"type":"string", "minLength":1, "maxLength":50},
+    "BuyerIdGln":{"type":"string", "pattern":"^[0-9]{13}$"},
+    "BuyerIdDuns":{"type":"string", "pattern":"^[0-9]{9}$"},
+    "DatapoolName":{"type":"string", "minLength":1, "maxLength":50},
+    "DatapoolGln":{"type":"string", "pattern":"^[0-9]{13}$"},
+    "CatalogueValidityStart":{"type":"string", "format":"date"},
+    "CatalogueValidityEnd":{"type":"string", "format":"date"},    
+    "Country":{"type":"array","uniqueItems":true,"items":{"type":"string", "pattern":"^[A-Z]{2}$"}},
+    "Language":{"type":"array","uniqueItems":true,"items":{"type":"string", "pattern":"^[a-z]{2}[-][A-Z]{2}$"}},
+    "CurrencyCode":{"type":"string", "pattern":"^[A-Z]{3}$"},
+
+    "CountrySpecificExtensions":{"type":"array", "items":{}}, 
+    
+    "Supplier":{"type":"array", "minItems":1, "items":{
+        "type":"object",
+        "additionalProperties": false,
+        "required": ["SupplierName", "Product"],
+        "properties":{
+            "SupplierName":{"type":"string", "minLength":1, "maxLength":80},
+            "SupplierIdGln":{"type":"string", "pattern":"^[0-9]{13}$"},
+            "SupplierIdDuns":{"type":"string", "pattern":"^[0-9]{9}$"},
+            "SupplierVatNo":{"type":"string", "minLength":1, "maxLength":18},
+            "SupplierAttachments":{"type":"array", "items":{
+                "type":"object",
+                "additionalProperties": false,
+				"required": ["AttachmentType", "AttachmentDetails"],
+                "properties":{
+                    "AttachmentType":{"type":"string", "enum":["ATX001", "ATX004", "ATX014", "ATX017", "ATX018", "ATX020", "ATX099"]},
+                    "AttachmentDetails":{"type":"array", "minItems":1, "items":{
+                        "type":"object",
+                        "additionalProperties": false,
+                        "required": ["AttachmentUri"],
+                        "properties":{
+                            "AttachmentLanguage":{"type":"array","uniqueItems":true,"items":{"type":"string", "pattern":"^[a-z]{2}[-][A-Z]{2}$"}},
+                            "AttachmentTypeSpecification":{"type":"array","items":{
+                                "type": "object",
+                                "additionalProperties": false,
+                                "required": ["AttachmentTypeSpecification"],
+                                "properties":{
+                                    "Language":{"type":"string", "pattern":"^[a-z]{2}[-][A-Z]{2}$"},
+                                    "AttachmentTypeSpecification":{"type":"string", "minLength":1, "maxLength":100}}}},
+                            "AttachmentFilename":{"type":"string", "minLength":1, "maxLength":100},
+                            "AttachmentUri":{"type":"string", "format": "uri"},
+                            "AttachmentDescription":{"type":"array","items":{
+                                "type": "object",
+                                "additionalProperties": false,
+                                "required": ["AttachmentDescription"],
+                                "properties":{
+                                    "Language":{"type":"string", "pattern":"^[a-z]{2}[-][A-Z]{2}$"},
+                                    "AttachmentDescription":{"type":"string", "minLength":1, "maxLength":255}}}},
+                            "AttachmentIssueDate":{"type":"string", "format":"date"},
+                            "AttachmentExpiryDate":{"type":"string", "format":"date"}}}}}}},   
+                        
+            "Product":{"type":"array", "minItems":1, "items":{
+                "type":"object",
+                "additionalProperties": false,
+                "required": ["ProductIdentification"],
+                "properties":{        
+                    "ProductIdentification":{
+                        "type":"object",
+                        "additionalProperties": false,
+                        "required": ["ManufacturerName", "ManufacturerProductNumber"],
+                        "properties":{
+                            "ManufacturerIdGln":{"type":"string", "pattern":"^[0-9]{13}$"},
+                            "ManufacturerIdDuns":{"type":"string", "pattern":"^[0-9]{9}$"},
+                            "ManufacturerName":{"type":"string", "minLength":1, "maxLength":80},
+                            "ManufacturerShortname":{"type":"string", "minLength":1, "maxLength":15},
+                            "ManufacturerProductNumber":{"type":"string", "minLength":1, "maxLength":35},
+                            "ProductGtin":{"type":"array","uniqueItems":true,"items":{"type":"string", "pattern":"^[0-9]{8,14}$"}},
+                            "UnbrandedProduct":{"type":"boolean"},
+                            "BrandName":{"type":"string", "minLength":1, "maxLength":50},
+                            "BrandDetails":{"type":"array","items":{
+                                "type": "object",
+                                "additionalProperties": false,
+                                "properties":{
+                                    "BrandSeries":{"type":"array","items":{
+                                        "type": "object",
+                                        "additionalProperties": false,
+                                        "required": ["BrandSeries"],
+                                        "properties":{
+                                            "Language":{"type":"string", "pattern":"^[a-z]{2}[-][A-Z]{2}$"},
+                                            "BrandSeries":{"type":"string", "minLength":1, "maxLength":50}}}},
+                                    "BrandSeriesVariation":{"type":"array","items":{
+                                        "type": "object",
+                                        "additionalProperties": false,
+                                        "required": ["BrandSeriesVariation"],
+                                        "properties":{
+                                            "Language":{"type":"string", "pattern":"^[a-z]{2}[-][A-Z]{2}$"},
+                                            "BrandSeriesVariation":{"type":"string", "minLength":1, "maxLength":50}}}}}}},
+                            "ProductValidityDate":{"type":"string", "format":"date"},
+                            "ProductObsolescenceDate":{"type":"string", "format":"date"},
+                            "CustomsCommodityCode":{"type":"string", "minLength":6, "maxLength":16},
+                            "FactorCustomsCommodityCode":{"type":"string", "pattern": "^[0-9]{1,11}[.]{0,1}[0-9]{0,4}$"},
+                            "CountryOfOrigin":{"type":"array","uniqueItems":true,"items":{"type":"string", "pattern":"^[A-Z]{2}$"}}}}, 
+            
+                    "ProductDetails":{
+                        "type":"object",
+                        "additionalProperties": false,
+                        "required": ["ProductDescriptions"],
+                        "properties":{
+                            "ProductStatus":{"type":"string", "enum":["PRE-LAUNCH", "ACTIVE", "ON HOLD", "PLANNED WITHDRAWAL", "OBSOLETE"]},
+                            "ProductType":{"type":"string", "enum":["PHYSICAL", "CONTRACT", "LICENCE", "SERVICE"]},
+                            "CustomisableProduct":{"type":"boolean"}, 
+                            "ProductDescriptions":{"type":"array", "items":{
+                                "type":"object",
+                                "additionalProperties": false,
+                                "required": ["MinimalProductDescription"],
+                                "properties":{
+                                    "DescriptionLanguage":{"type":"string", "pattern":"^[a-z]{2}[-][A-Z]{2}$"},
+                                    "MinimalProductDescription":{"type":"string", "minLength":1, "maxLength":80},
+                                    "UniqueMainProductDescription":{"type":"string", "minLength":1, "maxLength":255},
+                                    "FullProductDescription":{"type":"string", "minLength":1, "maxLength":10000},
+                                    "ProductMarketingText":{"type":"string", "minLength":1, "maxLength":10000},
+                                    "ProductSpecificationText":{"type":"string", "minLength":1, "maxLength":10000},
+                                    "ProductApplicationInstructions":{"type":"string", "minLength":1, "maxLength":10000},
+                                    "ProductKeyword":{"type":"array","uniqueItems":true,"items":{"type":"string", "minLength":1, "maxLength":50}},
+                                    "ProductPageUrl":{"type":"string", "format": "uri"}}}},
+                            "WarrantyConsumer":{"type":"integer", "minimum": 0,"exclusiveMaximum": 1000},
+                            "WarrantyBusiness":{"type":"integer", "minimum": 0,"exclusiveMaximum": 1000}}},
+
+                    "ProductRelations":{"type":"array", "items":{
+                        "type":"object",
+                        "additionalProperties": false,
+                        "required": ["RelatedManufacturerProductNumber", "RelationType", "RelatedProductQuantity"], 
+                        "properties":{
+                            "RelatedManufacturerProductNumber":{"type":"string", "minLength":1, "maxLength":35},
+                            "RelatedProductGtin":{"type":"array","uniqueItems":true,"items":{"type":"string", "pattern":"^[0-9]{8,14}$"}},
+                            "RelationType":{"type":"string", "enum":["ACCESSORY", "MAIN_PRODUCT", "CONSISTS_OF", "CROSS-SELLING", "MANDATORY", "SELECT", "SIMILAR", "SPAREPART", "UPSELLING", "SUCCESSOR", "PREDECESSOR", "OTHER"]},
+                            "RelatedProductQuantity":{"type":"integer", "minimum": 1}}}},
+                            
+                    "Legislation":{
+                        "type":"object",
+                        "additionalProperties": false,
+                        "properties":{
+                            "ElectricComponentContained":{"type":"boolean"},
+                            "BatteryContained":{"type":"boolean"},
+                            "WeeeCategory":{"type":"string", "enum":["1", "2", "3", "4", "5", "6"]},
+                            "RohsIndicator":{"type":"string", "enum":["true", "false", "exempt"]},
+                            "CeMarking":{"type":"boolean"},
+                            "SdsIndicator":{"type":"boolean"},
+                            "ReachIndicator":{"type":"string", "enum":["true", "false", "no data"]},
+                            "ReachDate":{"type":"string", "format":"date"},
+                            "ScipNumber":{"type":"string", "minLength":36, "maxLength":36},
+                            "UfiCode":{"type":"string", "pattern": "^[a-zA-Z0-9]{4}[-]{1}[a-zA-Z0-9]{4}[-]{1}[a-zA-Z0-9]{4}[-]{1}[a-zA-Z0-9]{4}$"},
+                            "UnNumber":{"type":"string", "pattern": "^[0-9]{4}$"},
+                            "HazardClass":{"type":"array","uniqueItems":true,"items":{"type":"string", "enum":["1", "2.1", "2.2", "2.3", "3", "4.1", "4.2", "4.3", "5.1", "5.2", "6.1", "6.2", "7", "8", "9"]}},
+                            "AdrCategory":{"type":"string", "enum":["0", "1", "2", "3", "4"]},
+                            "NetWeightHazardousSubstances":{"type":"string", "pattern": "^[0-9]{1,12}[.]{0,1}[0-9]{0,4}$"},
+                            "VolumeHazardousSubstances":{"type":"string", "pattern": "^[0-9]{1,12}[.]{0,1}[0-9]{0,4}$"},
+                            "UnShippingName":{"type":"array","items":{
+                                "type": "object",
+                                "additionalProperties": false,
+                                "required": ["UnShippingName"],
+                                "properties":{
+                                    "Language":{"type":"string", "pattern":"^[a-z]{2}[-][A-Z]{2}$"},
+                                    "UnShippingName":{"type":"string", "minLength":1, "maxLength":255}}}},
+                            "PackingGroup":{"type":"string", "enum":["I", "II", "III"]},
+                            "LimitedQuantities":{"type":"boolean"},
+                            "ExceptedQuantities":{"type":"boolean"},
+                            "AggregationState":{"type":"string", "enum":["L", "S", "G"]},
+                            "SpecialProvisionId":{"type":"array","uniqueItems":true,"items":{"type":"string", "pattern": "^SP[0-9]{2,4}$"}},
+                            "ClassificationCode":{"type":"string", "minLength":1, "maxLength":5},
+                            "HazardLabel":{"type":"array","uniqueItems":true,"items":{"type":"string", "minLength":1, "maxLength":3}},
+                            "EnvironmentalHazards":{"type":"boolean"},
+                            "TunnelCode":{"type":"string", "enum":["A", "B", "C", "D", "E"]},
+                            "LabelCode":{"type":"array","uniqueItems":true,"items":{"type":"string", "enum":["GHS01", "GHS02", "GHS03", "GHS04", "GHS05", "GHS06", "GHS07", "GHS08", "GHS09"]}},
+                            "SignalWord":{"type":"string", "enum":["D", "W"]},
+                            "HazardStatement":{"type":"array","uniqueItems":true,"items":{"type":"string", "minLength":4, "maxLength":6}},
+                            "PrecautionaryStatement":{"type":"array","uniqueItems":true,"items":{"type":"string", "pattern": "^P[0-9]{3}$"}},
+                            "LiIonTested":{"type":"boolean"},
+                            "LithiumAmount":{"type":"string", "pattern": "^[0-9]{1,12}[.]{0,1}[0-9]{0,4}$"},
+                            "BatteryEnergy":{"type":"string", "pattern": "^[0-9]{1,12}[.]{0,1}[0-9]{0,4}$"},
+                            "Nos274":{"type":"boolean"},
+                            "HazardTrigger":{"type":"array","uniqueItems":true,"items":{"type":"string", "minLength":1, "maxLength":100}}}},
+                
+                    "LcaEnvironmental":{
+                        "type":"object",
+                        "additionalProperties": false,
+                        "required": ["DeclaredUnitUnit", "DeclaredUnitQuantity", "LcaReferenceLifetime", "ThirdPartyVerification", "LcaDeclaration"],
+                        "properties":{
+                            "DeclaredUnitUnit":{"type":"string", "enum":["KGM", "LTR", "MTK", "MTQ", "MTR", "PCE", "TNE", "FOT", "FTK", "FTQ", "LBR", "LTN", "YDK", "YRD"]},
+                            "DeclaredUnitQuantity":{"type":"string", "pattern": "^[0-9]{1,11}[.]{0,1}[0-9]{0,4}$"},
+                            "FunctionalUnitDescription":{"type":"array","items":{
+                                "type": "object",
+                                "additionalProperties": false,
+                                "required": ["FunctionalUnitDescription"],
+                                "properties":{
+                                    "Language":{"type":"string", "pattern":"^[a-z]{2}[-][A-Z]{2}$"},
+                                    "FunctionalUnitDescription":{"type":"string", "minLength":1, "maxLength":10000}}}},
+                            "LcaReferenceLifetime":{"type":"integer", "minimum": 0},
+                            "ThirdPartyVerification":{"type":"string", "enum":["none", "internally", "externally"]},
+                            "LcaDeclaration":{"type":"array", "minItems":1, "items":{
+                                "type":"object",
+                                "additionalProperties": false,
+                                "required": ["LifeCycleStage", "LcaDeclarationIndicator"],
+                                "properties":{
+                                    "LifeCycleStage":{"type":"string", "enum":["A1", "A2", "A3", "A1-A3", "A4", "A5", "B1", "B2", "B3", "B4", "B5", "B6", "B7", "C1", "C2", "C3", "C4", "D"]},
+                                    "LcaDeclarationIndicator":{"type":"string", "enum":["MDE", "MND", "MNR", "AGG"]},
+                                    "DeclaredUnitGwpTotal":{"type":"number"},
+                                    "DeclaredUnitAp":{"type":"number"},
+                                    "DeclaredUnitEpFreshwater":{"type":"number"},
+                                    "DeclaredUnitEpMarine":{"type":"number"},
+                                    "DeclaredUnitEpTerrestrial":{"type":"number"},
+                                    "DeclaredUnitPocp":{"type":"number"},
+                                    "DeclaredUnitOdp":{"type":"number"},
+                                    "DeclaredUnitAdpe":{"type":"number"},
+                                    "DeclaredUnitAdpf":{"type":"number"},
+                                    "DeclaredUnitWdp":{"type":"number"},
+                                    "DeclaredUnitPert":{"type":"number"},
+                                    "DeclaredUnitPenrt":{"type":"number"}}}}}},
+
+                    "ProductAttachments":{"type":"array", "items":{
+                        "type":"object",
+                        "additionalProperties": false,
+                        "required": ["AttachmentType", "AttachmentDetails"], 
+                        "properties":{
+                            "AttachmentType":{"type":"string", "enum":["ATX001", "ATX002", "ATX003", "ATX004", "ATX005", "ATX006", "ATX007", "ATX008", "ATX009", "ATX010", "ATX011", "ATX012", "ATX013", "ATX014", "ATX015", "ATX016", "ATX017", "ATX018", "ATX019", "ATX020", "ATX021", "ATX022", "ATX099"]},
+                            "ProductImageSimilar":{"type":"boolean"},
+                            "AttachmentOrder":{"type":"integer", "minimum": 1},
+                            "AttachmentDetails":{"type":"array", "minItems":1, "items":{
+                                "type":"object",
+                                "additionalProperties": false,
+                                "required": ["AttachmentUri"],
+                                "properties":{
+                                    "AttachmentLanguage":{"type":"array","uniqueItems":true,"items":{"type":"string", "pattern":"^[a-z]{2}[-][A-Z]{2}$"}},
+                                    "AttachmentTypeSpecification":{"type":"array","items":{
+                                        "type": "object",
+                                        "additionalProperties": false,
+                                        "required": ["AttachmentTypeSpecification"],
+                                        "properties":{
+                                            "Language":{"type":"string", "pattern":"^[a-z]{2}[-][A-Z]{2}$"},
+                                            "AttachmentTypeSpecification":{"type":"string", "minLength":1, "maxLength":100}}}},
+                                    "AttachmentFilename":{"type":"string", "minLength":1, "maxLength":100},
+                                    "AttachmentUri":{"type":"string", "format": "uri"},
+                                    "AttachmentDescription":{"type":"array","items":{
+                                       "type": "object",
+                                        "additionalProperties": false,
+                                        "required": ["AttachmentDescription"],
+                                        "properties":{
+                                            "Language":{"type":"string", "pattern":"^[a-z]{2}[-][A-Z]{2}$"},
+                                            "AttachmentDescription":{"type":"string", "minLength":1, "maxLength":255}}}},
+                                    "AttachmentIssueDate":{"type":"string", "format":"date"},
+                                    "AttachmentExpiryDate":{"type":"string", "format":"date"}}}}}}},
+
+                    "EtimClassification":{"type":"array", "items":{
+                        "type":"object",
+                        "additionalProperties": false,
+                        "required": ["EtimReleaseVersion", "EtimClassCode"],
+                        "properties":{
+                            "EtimReleaseVersion":{"type":"string", "pattern": "^[0-9]{1,2}[.]{1}[0-9]{1}|DYNAMIC$"},
+                            "EtimClassCode":{"type":"string", "pattern": "^EC[0-9]{6}$"},
+                            "EtimClassVersion":{"type":"integer", "minimum": 1},
+                            "EtimDynamicReleaseDate":{"type":"string", "format":"date"},
+                            "EtimFeatures":{"type":"array", "items":{
+                                "type":"object",
+                                "additionalProperties": false,
+                                "required": ["EtimFeatureCode"],
+                                "properties":{
+                                    "EtimFeatureCode":{"type":"string", "pattern": "^EF([0-9]{6}|I[0-9]{5}|[A-Z]{2}[0-9]{4})$"},
+                                    "EtimValueCode":{"type":"string", "pattern": "^EV[0-9]{6}$"},
+                                    "EtimValueNumeric":{"type":"string", "pattern": "^[-]{0,1}[0-9]{1,12}[.]{0,1}[0-9]{0,4}$"},
+                                    "EtimValueRangeLower":{"type":"string", "pattern": "^[-]{0,1}[0-9]{1,12}[.]{0,1}[0-9]{0,4}$"},
+                                    "EtimValueRangeUpper":{"type":"string", "pattern": "^[-]{0,1}[0-9]{1,12}[.]{0,1}[0-9]{0,4}$"},
+                                    "EtimValueLogical":{"type":"boolean"},
+                                    "EtimValueDetails":{"type":"array","items":{
+                                        "type": "object",
+                                        "additionalProperties": false,
+                                        "required": ["EtimValueDetails"],
+                                        "properties":{
+                                            "Language":{"type":"string", "pattern":"^[a-z]{2}[-][A-Z]{2}$"},
+                                            "EtimValueDetails":{"type":"string", "minLength":1, "maxLength":255}}}},
+                                    "ReasonNoValue":{"type":"string", "enum":["MV", "NA", "UN"]}}}},
+                            "EtimModellingClassCode":{"type":"string", "pattern": "^MC[0-9]{6}$"},
+                            "EtimModellingClassVersion":{"type":"integer", "minimum": 1},
+                            "EtimModellingPorts":{"type":"array", "items":{
+                                "type":"object",
+                                "additionalProperties": false,
+                                "required": ["EtimModellingPortcode"],
+                                "properties":{
+                                    "EtimModellingPortcode":{"type":"integer", "minimum": 0},
+                                    "EtimModellingConnectionTypeCode":{"type":"string", "pattern": "^CT[0-9]{6}$"},
+                                    "EtimModellingConnectionTypeVersion":{"type":"integer", "minimum": 1},
+                                    "EtimModellingFeatures":{"type":"array", "items":{
+                                        "type":"object",
+                                        "additionalProperties": false,
+                                        "required": ["EtimFeatureCode"],
+                                        "properties":{
+                                            "EtimFeatureCode":{"type":"string", "pattern": "^EF([0-9]{6}|I[0-9]{5})$"},
+                                            "EtimValueCode":{"type":"string", "pattern": "^EV[0-9]{6}$"},
+                                            "EtimValueNumeric":{"type":"string", "pattern": "^[-]{0,1}[0-9]{1,12}[.]{0,1}[0-9]{0,4}$"},
+                                            "EtimValueRangeLower":{"type":"string", "pattern": "^[-]{0,1}[0-9]{1,12}[.]{0,1}[0-9]{0,4}$"},
+                                            "EtimValueRangeUpper":{"type":"string", "pattern": "^[-]{0,1}[0-9]{1,12}[.]{0,1}[0-9]{0,4}$"},
+                                            "EtimValueLogical":{"type":"boolean"},
+                                            "EtimValueCoordinateX":{"type":"string", "pattern": "^[-]{0,1}[0-9]{1,12}[.]{0,1}[0-9]{0,4}$"},
+                                            "EtimValueCoordinateY":{"type":"string", "pattern": "^[-]{0,1}[0-9]{1,12}[.]{0,1}[0-9]{0,4}$"},
+                                            "EtimValueCoordinateZ":{"type":"string", "pattern": "^[-]{0,1}[0-9]{1,12}[.]{0,1}[0-9]{0,4}$"},
+                                            "EtimValueMatrix":{"type":"array", "items":{
+                                                "type":"object",
+                                                "additionalProperties": false,
+                                                "required": ["EtimValueMatrixSource", "EtimValueMatrixResult"],
+                                                "properties":{
+                                                    "EtimValueMatrixSource":{"type":"string", "pattern": "^[-]{0,1}[0-9]{1,12}[.]{0,1}[0-9]{0,4}$"},
+                                                    "EtimValueMatrixResult":{"type":"string", "pattern": "^[-]{0,1}[0-9]{1,12}[.]{0,1}[0-9]{0,4}$"}}}}}}}}}}}}}, 
+                
+                    "OtherClassifications":{"type":"array", "items":{
+                        "type":"object",
+                        "additionalProperties": false,
+                        "required": ["ClassificationName", "ClassificationClassCode"],
+                        "properties":{
+                            "ClassificationName":{"type":"string", "minLength":1, "maxLength":35},
+                            "ClassificationVersion":{"type":"string", "minLength":1, "maxLength":10},
+                            "ClassificationClassCode":{"type":"string", "minLength":1, "maxLength":100},
+                            "ClassificationFeatures":{"type":"array", "items":{
+                                "type":"object",
+                                "additionalProperties": false,
+                                "required": ["ClassificationFeatureName", "ClassificationFeatureValue1"],
+                                "properties":{
+                                    "ClassificationFeatureName":{"type":"string", "minLength":1, "maxLength":100},
+                                    "ClassificationFeatureValue1":{"type":"string", "minLength":1, "maxLength":100},
+                                    "ClassificationFeatureValue2":{"type":"string", "minLength":1, "maxLength":100},
+                                    "ClassificationFeatureUnit":{"type":"string", "minLength":1, "maxLength":100}}}}}}},
+                            
+                    "ProductCountrySpecificFields":{"type":"array", "items":{
+                        "type":"object",
+                        "additionalProperties": false,
+                        "required": ["CSProductCharacteristicCode"],
+                        "properties":{
+                            "CSProductCharacteristicCode":{"type":"string", "minLength":1, "maxLength":60},
+                            "CSProductCharacteristicName":{"type":"array","items":{
+                                "type": "object",
+                                "additionalProperties": false,
+                                "required": ["CSProductCharacteristicName"],
+                                "properties":{
+                                    "Language":{"type":"string", "pattern":"^[a-z]{2}[-][A-Z]{2}$"},
+                                    "CSProductCharacteristicName":{"type":"string", "minLength":1, "maxLength":255}}}},
+                            "CSProductCharacteristicValueBoolean":{"type":"boolean"},
+                            "CSProductCharacteristicValueNumeric":{"type":"string", "pattern": "^[-]{0,1}[0-9]{1,12}[.]{0,1}[0-9]{0,4}$"},
+                            "CSProductCharacteristicValueRangeLower":{"type":"string", "pattern": "^[-]{0,1}[0-9]{1,12}[.]{0,1}[0-9]{0,4}$"},
+                            "CSProductCharacteristicValueRangeUpper":{"type":"string", "pattern": "^[-]{0,1}[0-9]{1,12}[.]{0,1}[0-9]{0,4}$"},
+                            "CSProductCharacteristicValueString":{"type":"array","items":{
+                                "type": "object",
+                                "additionalProperties": false,
+                                "required": ["CSProductCharacteristicValueString"],
+                                "properties":{
+                                    "Language":{"type":"string", "pattern":"^[a-z]{2}[-][A-Z]{2}$"},
+                                    "CSProductCharacteristicValueString":{"type":"string", "minLength":1, "maxLength":4000}}}},
+                            "CSProductCharacteristicValueSet":{"type":"array","items":{
+                                "type": "object",
+                                "additionalProperties": false,
+                                "required": ["CSProductCharacteristicValueSet"],
+                                "properties":{
+                                    "Language":{"type":"string", "pattern":"^[a-z]{2}[-][A-Z]{2}$"},
+                                    "CSProductCharacteristicValueSet":{"type":"array","uniqueItems":true,"items":{"type":"string", "minLength":1, "maxLength":255}}}}},
+                            "CSProductCharacteristicValueSelect":{"type":"string", "minLength":1, "maxLength":60},
+                            "CSProductCharacteristicValueUnitCode":{"type":"string", "minLength":1, "maxLength":3},
+                            "CSProductCharacteristicReferenceGtin":{"type":"array","uniqueItems":true,"items":{"type":"string", "pattern":"^[0-9]{8,14}$"}}}}},
+
+                    "ProductCountrySpecificExtensions":{"type":"array", "items":{}}, 
+
+                    "TradeItem":{"type":"array", "items":{
+                        "type":"object",
+                        "additionalProperties": false,
+                        "required": ["ItemIdentification", "Ordering", "Pricing"],
+                        "properties":{      
+                            "ItemIdentification":{
+                                "type":"object",
+                                "additionalProperties": false,
+                                "required": ["SupplierItemNumber"],
+                                "properties":{
+                                    "SupplierItemNumber":{"type":"string", "minLength":1, "maxLength":35},
+                                    "SupplierAltItemNumber":{"type":"string", "minLength":1, "maxLength":35},
+                                    "ManufacturerItemNumber":{"type":"string", "minLength":1, "maxLength":35},
+                                    "ItemGtin":{"type":"array","uniqueItems":true,"items":{"type":"string", "pattern":"^[0-9]{8,14}$"}},
+                                    "BuyerItemNumber":{"type":"string", "minLength":1, "maxLength":35},
+                                    "DiscountGroupId":{"type":"string", "minLength":1, "maxLength":20},
+                                    "DiscountGroupDescription":{"type":"array","items":{
+                                        "type": "object",
+                                        "additionalProperties": false,
+                                        "required": ["DiscountGroupDescription"],
+                                        "properties":{
+                                            "Language":{"type":"string", "pattern":"^[a-z]{2}[-][A-Z]{2}$"},
+                                            "DiscountGroupDescription":{"type":"string", "minLength":1, "maxLength":100}}}},
+                                    "BonusGroupId":{"type":"string", "minLength":1, "maxLength":20},
+                                    "BonusGroupDescription":{"type":"array","items":{
+                                        "type": "object",
+                                        "additionalProperties": false,
+                                        "required": ["BonusGroupDescription"],
+                                        "properties":{
+                                            "Language":{"type":"string", "pattern":"^[a-z]{2}[-][A-Z]{2}$"},
+                                            "BonusGroupDescription":{"type":"string", "minLength":1, "maxLength":100}}}},
+                                    "ItemValidityDate":{"type":"string", "format":"date"},
+                                    "ItemObsolescenceDate":{"type":"string", "format":"date"}}},
+                        
+                            "ItemDetails":{
+                                "type":"object",
+                                "additionalProperties": false,
+                                "required": ["ItemDescriptions"],
+                                "properties":{
+                                    "ItemStatus":{"type":"string", "enum":["PRE-LAUNCH", "ACTIVE", "ON HOLD", "PLANNED WITHDRAWAL", "OBSOLETE"]},
+                                    "ItemCondition":{"type":"string", "enum":["NEW", "USED", "REFURBISHED"]},
+                                    "StockItem":{"type":"boolean"},
+                                    "ShelfLifePeriod":{"type":"integer", "minimum": 0, "exclusiveMaximum": 1000},
+                                    "ItemDescriptions":{"type":"array", "minItems":1, "items":{
+                                        "type":"object",
+                                        "additionalProperties": false,
+                                        "required": ["MinimalItemDescription"],
+                                        "properties":{
+                                            "DescriptionLanguage":{"type":"string", "pattern":"^[a-z]{2}[-][A-Z]{2}$"},
+                                            "MinimalItemDescription":{"type":"string", "minLength":1, "maxLength":80},
+                                            "UniqueMainItemDescription":{"type":"string", "minLength":1, "maxLength":255}}}}}},
+
+                            "ItemRelations":{"type":"array", "items":{
+                                "type":"object",
+                                "additionalProperties": false,
+                                "required": ["RelatedSupplierItemNumber", "RelationType", "RelatedItemQuantity"],
+                                "properties":{
+                                    "RelatedSupplierItemNumber":{"type":"string", "minLength":1, "maxLength":35},
+                                    "RelatedManufacturerItemNumber":{"type":"string", "minLength":1, "maxLength":35},
+                                    "RelatedItemGtin":{"type":"array","uniqueItems":true,"items":{"type":"string", "pattern":"^[0-9]{8,14}$"}},
+                                    "RelationType":{"type":"string", "enum":["ACCESSORY", "MAIN_PRODUCT", "CONSISTS_OF", "CROSS-SELLING", "MANDATORY", "SELECT", "SIMILAR", "SPAREPART", "UPSELLING", "SUCCESSOR", "PREDECESSOR", "OTHER"]},
+                                    "RelatedItemQuantity":{"type":"integer", "minimum": 1}}}},
+                                
+                            "ItemLogisticDetails":{"type":"array", "items":{
+                                "type":"object",
+                                "additionalProperties": false,
+                                "properties":{
+                                    "BaseItemNetLength":{"type":"string", "pattern": "^[0-9]{1,12}[.]{0,1}[0-9]{0,4}$"},
+                                    "BaseItemNetWidth":{"type":"string", "pattern": "^[0-9]{1,12}[.]{0,1}[0-9]{0,4}$"},
+                                    "BaseItemNetHeight":{"type":"string", "pattern": "^[0-9]{1,12}[.]{0,1}[0-9]{0,4}$"},
+                                    "BaseItemNetDiameter":{"type":"string", "pattern": "^[0-9]{1,12}[.]{0,1}[0-9]{0,4}$"},
+                                    "NetDimensionUnit":{"type":"string", "enum":["CMT", "DTM", "KTM", "MMT", "MTR", "FOT", "INH", "SMI", "YRD"]},
+                                    "BaseItemNetWeight":{"type":"string", "pattern": "^[0-9]{1,12}[.]{0,1}[0-9]{0,4}$"},
+                                    "NetWeightUnit":{"type":"string", "enum":["GRM", "KGM", "MGM", "TNE", "LTN", "LBR", "ONZ"]},
+                                    "BaseItemNetVolume":{"type":"string", "pattern": "^[0-9]{1,12}[.]{0,1}[0-9]{0,4}$"},
+                                    "NetVolumeUnit":{"type":"string", "enum":["LTR", "MLT", "MMQ", "MTQ", "FTQ", "INQ"]}}}},
+
+                            "Ordering":{
+                                "type":"object",
+                                "additionalProperties": false,
+                                "required": ["OrderUnit", "MinimumOrderQuantity", "OrderStepSize"],
+                                "properties":{
+                                    "OrderUnit":{"type":"string", "enum":["ANN", "BE", "BG", "BO", "BX", "C62", "CA", "CI", "CL", "CMK", "CMQ", "CMT", "CQ", "CR", "CS", "CT", "D99", "DAY", "DR", "DZN", "FOT", "FTQ", "GRM", "HLT", "HUR", "INH", "INQ", "KG", "KGM", "KTM", "LBR", "LTN", "LTR", "MGM", "MIN", "MLT", "MMK", "MMQ", "MMT", "MTK", "MTQ", "MTR", "NMP", "NPL", "NRL", "ONZ", "PA", "PF", "PK", "PL", "PR", "PU", "RG", "RL", "RO", "SA", "SEC", "SET", "SMI", "ST", "TN", "TNE", "TU", "WEE", "YRD", "Z2", "Z3"]},
+                                    "MinimumOrderQuantity":{"type":"string", "pattern": "^[0-9]{1,12}[.]{0,1}[0-9]{0,4}$"},
+                                    "OrderStepSize":{"type":"string", "pattern": "^[0-9]{1,12}[.]{0,1}[0-9]{0,4}$"},
+                                    "StandardOrderLeadTime":{"type":"integer", "minimum": 0},
+                                    "UseUnit":{"type":"string", "enum":["ANN", "BE", "BG", "BO", "BX", "C62", "CA", "CI", "CL", "CMK", "CMQ", "CMT", "CQ", "CR", "CS", "CT", "D99", "DAY", "DR", "DZN", "FOT", "FTQ", "GRM", "HLT", "HUR", "INH", "INQ", "KG", "KGM", "KTM", "LBR", "LTN", "LTR", "MGM", "MIN", "MLT", "MMK", "MMQ", "MMT", "MTK", "MTQ", "MTR", "NMP", "NPL", "NRL", "ONZ", "PA", "PF", "PK", "PL", "PR", "PU", "RG", "RL", "RO", "SA", "SEC", "SET", "SMI", "ST", "TN", "TNE", "TU", "WEE", "YRD", "Z2", "Z3"]},
+                                    "UseUnitConversionFactor":{"type":"string", "pattern": "^[0-9]{1,12}[.]{0,1}[0-9]{0,4}$"},
+                                    "SingleUseUnitQuantity":{"type":"string", "pattern": "^[0-9]{1,12}[.]{0,1}[0-9]{0,4}$"},
+                                    "AlternativeUseUnit":{"type":"string", "enum":["ANN", "BE", "BG", "BO", "BX", "C62", "CA", "CI", "CL", "CMK", "CMQ", "CMT", "CQ", "CR", "CS", "CT", "D99", "DAY", "DR", "DZN", "FOT", "FTQ", "GRM", "HLT", "HUR", "INH", "INQ", "KG", "KGM", "KTM", "LBR", "LTN", "LTR", "MGM", "MIN", "MLT", "MMK", "MMQ", "MMT", "MTK", "MTQ", "MTR", "NMP", "NPL", "NRL", "ONZ", "PA", "PF", "PK", "PL", "PR", "PU", "RG", "RL", "RO", "SA", "SEC", "SET", "SMI", "ST", "TN", "TNE", "TU", "WEE", "YRD", "Z2", "Z3"]},
+                                    "AlternativeUseUnitConversionFactor":{"type":"string", "pattern": "^[0-9]{1,12}[.]{0,1}[0-9]{0,4}$"}}},
+
+                            "Pricing":{"type":"array", "items":{
+                                "type":"object",
+                                "additionalProperties": false,
+                                "required": ["PriceUnit", "PriceQuantity"],
+                                "properties":{
+                                "PriceUnit":{"type":"string", "enum":["ANN", "BE", "BG", "BO", "BX", "C62", "CA", "CI", "CL", "CMK", "CMQ", "CMT", "CQ", "CR", "CS", "CT", "D99", "DAY", "DR", "DZN", "FOT", "FTQ", "GRM", "HLT", "HUR", "INH", "INQ", "KG", "KGM", "KTM", "LBR", "LTN", "LTR", "MGM", "MIN", "MLT", "MMK", "MMQ", "MMT", "MTK", "MTQ", "MTR", "NMP", "NPL", "NRL", "ONZ", "PA", "PF", "PK", "PL", "PR", "PU", "RG", "RL", "RO", "SA", "SEC", "SET", "SMI", "ST", "TN", "TNE", "TU", "WEE", "YRD", "Z2", "Z3"]},
+                                "PriceUnitFactor":{"type":"string", "pattern": "^[0-9]{1,11}[.]{0,1}[0-9]{0,4}$"},
+                                "PriceQuantity":{"type":"string", "pattern": "^[0-9]{1,5}[.]{0,1}[0-9]{0,4}$"},
+                                "PriceOnRequest":{"type":"boolean"},
+                                "GrossListPrice":{"type":"string", "pattern": "^[0-9]{1,11}[.]{0,1}[0-9]{0,4}$"},
+                                "NetPrice":{"type":"string", "pattern": "^[0-9]{1,11}[.]{0,1}[0-9]{0,4}$"},
+                                "RecommendedRetailPrice":{"type":"string", "pattern": "^[0-9]{1,11}[.]{0,1}[0-9]{0,4}$"},
+                                "Vat":{"type":"string", "pattern": "^[0-9]{1,2}[.]{0,1}[0-9]{0,2}$"},
+                                "PriceValidityDate":{"type":"string", "format":"date"},
+                                "PriceExpiryDate":{"type":"string", "format":"date"},
+                                "AllowanceSurcharge":{"type":"array", "items":{
+                                    "type":"object",
+                                    "additionalProperties": false,
+                                    "required": ["AllowanceSurchargeIndicator", "AllowanceSurchargeType"],
+                                    "properties":{
+                                        "AllowanceSurchargeIndicator":{"type":"string", "enum":["ALLOWANCE", "SURCHARGE"]},
+                                        "AllowanceSurchargeValidityDate":{"type":"string", "format":"date"},
+                                        "AllowanceSurchargeType":{"type":"string", "enum":["AAT", "ABL", "ADO", "ADR","ADZ", "AEM", "AEO", "AEP", "AEQ", "CAI", "DAE", "DBD", "FC", "HD", "INS", "MAC", "MAT", "PAD", "PI", "QD", "RAD", "SH", "TD", "WHE", "X21"]},
+                                        "AllowanceSurchargeAmount":{"type":"string", "pattern": "^[0-9]{1,11}[.]{0,1}[0-9]{0,4}$"},
+                                        "AllowanceSurchargeSequenceNumber":{"type":"integer", "minimum": 1},
+                                        "AllowanceSurchargePercentage":{"type":"string", "pattern": "^[0-9]{1,3}[.]{0,1}[0-9]{0,3}$"},
+                                        "AllowanceSurchargeDescription":{"type":"array","items":{
+                                            "type": "object",
+                                            "additionalProperties": false,
+                                            "required": ["AllowanceSurchargeDescription"],
+                                            "properties":{
+                                                "Language":{"type":"string", "pattern":"^[a-z]{2}[-][A-Z]{2}$"},
+                                                "AllowanceSurchargeDescription":{"type":"string", "minLength":1, "maxLength":35}}}},
+                                        "AllowanceSurchargeMinimumQuantity":{"type":"string", "pattern": "^[0-9]{1,12}[.]{0,1}[0-9]{0,4}$"}}}}}}},
+                        
+                            "ItemAttachments":{"type":"array", "items":{
+                                "type":"object",
+                                "additionalProperties": false,
+                                "required": ["AttachmentType", "AttachmentDetails"],
+                                "properties":{
+                                "AttachmentType":{"type":"string", "enum":["ATX001", "ATX002", "ATX003", "ATX004", "ATX005", "ATX006", "ATX007", "ATX008", "ATX009", "ATX010", "ATX011", "ATX012", "ATX013", "ATX014", "ATX015", "ATX016", "ATX017", "ATX018", "ATX019", "ATX020", "ATX021", "ATX099"]},
+                                "AttachmentDetails":{"type":"array", "items":{
+                                    "type":"object",
+                                    "additionalProperties": false,
+                                    "required": ["AttachmentUri"],
+                                    "properties":{
+                                        "AttachmentLanguage":{"type":"array","uniqueItems":true,"items":{"type":"string", "pattern":"^[a-z]{2}[-][A-Z]{2}$"}},
+                                        "AttachmentTypeSpecification":{"type":"array","items":{
+                                            "type": "object",
+                                            "additionalProperties": false,
+                                            "required": ["AttachmentTypeSpecification"],
+                                            "properties":{
+                                                "Language":{"type":"string", "pattern":"^[a-z]{2}[-][A-Z]{2}$"},
+                                                "AttachmentTypeSpecification":{"type":"string", "minLength":1, "maxLength":100}}}},
+                                        "AttachmentFilename":{"type":"string", "minLength":1, "maxLength":100},
+                                        "AttachmentUri":{"type":"string", "format": "uri"},
+                                        "AttachmentDescription":{"type":"array","items":{
+                                            "type": "object",
+                                            "additionalProperties": false,
+                                            "required": ["AttachmentDescription"],
+                                            "properties":{
+                                                "Language":{"type":"string", "pattern":"^[a-z]{2}[-][A-Z]{2}$"},
+                                                "AttachmentDescription":{"type":"string", "minLength":1, "maxLength":255}}}},
+                                        "AttachmentIssueDate":{"type":"string", "format":"date"},
+                                        "AttachmentExpiryDate":{"type":"string", "format":"date"}}}}}}},
+                                   
+                            "ItemCountrySpecificFields":{"type":"array", "items":{
+                                "type":"object",
+                                "additionalProperties": false,
+                                "required": ["CSItemCharacteristicCode"],
+                                "properties":{
+                                "CSItemCharacteristicCode":{"type":"string", "minLength":1, "maxLength":60},
+                                "CSItemCharacteristicName":{"type":"array","items":{
+                                    "type": "object",
+                                    "additionalProperties": false,
+                                    "required": ["CSItemCharacteristicName"],
+                                    "properties":{
+                                        "Language":{"type":"string", "pattern":"^[a-z]{2}[-][A-Z]{2}$"},
+                                        "CSItemCharacteristicName":{"type":"string", "minLength":1, "maxLength":255}}}},
+                                "CSItemCharacteristicValueBoolean":{"type":"boolean"},
+                                "CSItemCharacteristicValueNumeric":{"type":"string", "pattern": "^[-]{0,1}[0-9]{1,12}[.]{0,1}[0-9]{0,4}$"},
+                                "CSItemCharacteristicValueRangeLower":{"type":"string", "pattern": "^[-]{0,1}[0-9]{1,12}[.]{0,1}[0-9]{0,4}$"},
+                                "CSItemCharacteristicValueRangeUpper":{"type":"string", "pattern": "^[-]{0,1}[0-9]{1,12}[.]{0,1}[0-9]{0,4}$"},
+                                "CSItemCharacteristicValueString":{"type":"array","items":{
+                                    "type": "object",
+                                    "additionalProperties": false,
+                                    "required": ["CSItemCharacteristicValueString"],
+                                    "properties":{
+                                        "Language":{"type":"string", "pattern":"^[a-z]{2}[-][A-Z]{2}$"},
+                                        "CSItemCharacteristicValueString":{"type":"string", "minLength":1, "maxLength":4000}}}},
+                                "CSItemCharacteristicValueSet":{"type":"array","items":{
+                                    "type": "object",
+                                    "additionalProperties": false,
+                                    "required": ["CSItemCharacteristicValueSet"],
+                                    "properties":{
+                                        "Language":{"type":"string", "pattern":"^[a-z]{2}[-][A-Z]{2}$"},
+                                        "CSItemCharacteristicValueSet":{"type":"array","uniqueItems":true,"items":{"type":"string", "minLength":1, "maxLength":255}}}}},
+                                "CSItemCharacteristicValueSelect":{"type":"string", "minLength":1, "maxLength":60},
+                                "CSItemCharacteristicValueUnitCode":{"type":"string", "minLength":1, "maxLength":3},
+                                "CSItemCharacteristicReferenceGtin":{"type":"array","uniqueItems":true,"items":{"type":"string", "pattern":"^[0-9]{8,14}$"}}}}},
+
+                            "ItemCountrySpecificExtensions":{"type":"array", "items":{}}, 
+
+                            "PackagingUnit":{"type":"array", "items":{
+                                "type":"object",
+                                "additionalProperties": false,
+                                "required": ["PackagingIdentification"],
+                                "properties":{      
+                                   "PackagingIdentification":{
+                                        "type":"object",
+                                        "additionalProperties": false,
+                                        "required": ["PackagingTypeCode"],
+                                        "properties":{
+                                            "SupplierPackagingNumber":{"type":"string", "minLength":1, "maxLength":35},
+                                            "ManufacturerPackagingNumber":{"type":"string", "minLength":1, "maxLength":35},
+                                            "PackagingGtin":{"type":"array","uniqueItems":true,"items":{"type":"string", "pattern":"^[0-9]{8,14}$"}},
+                                            "PackagingTypeCode":{"type":"string", "enum":["BE", "BG", "BJ", "BO", "BR", "BX", "C62", "CA", "CL", "CQ", "CR", "CS", "CT", "CY", "D99", "DR", "EV", "KG", "NE", "PA", "PF", "PK", "PL", "PR", "PU", "RG", "RL", "RO", "SA", "SET", "TN", "TU", "WR", "Z2", "Z3"]},              
+                                            "PackagingQuantity":{"type":"string", "pattern": "^[0-9]{1,12}[.]{0,1}[0-9]{0,4}$"},
+                                            "TradeItemPrimaryPackaging":{"type":"boolean"},
+                                            "PackagingGs1Code128":{"type":"string", "minLength":1, "maxLength":48},
+                                            "PackagingRecyclable":{"type":"boolean"},
+                                            "PackagingReusable":{"type":"boolean"},
+                                            "PackagingBreak":{"type":"boolean"},
+                                            "NumberOfPackagingParts":{"type":"integer", "minimum": 1}}},
+
+                                    "PackagingLogisticDetails":{"type":"array", "items":{
+                                        "type":"object",
+                                        "additionalProperties": false,
+                                       "properties":{ 
+                                            "SupplierPackagingPartNumber":{"type":"string", "minLength":1, "maxLength":35},
+                                            "ManufacturerPackagingPartNumber":{"type":"string", "minLength":1, "maxLength":35},
+                                            "PackagingPartGtin":{"type":"array","uniqueItems":true,"items":{"type":"string", "pattern":"^[0-9]{8,14}$"}},  
+                                            "PackagingTypeLength":{"type":"string", "pattern": "^[0-9]{1,12}[.]{0,1}[0-9]{0,4}$"},
+                                            "PackagingTypeWidth":{"type":"string", "pattern": "^[0-9]{1,12}[.]{0,1}[0-9]{0,4}$"},
+                                            "PackagingTypeHeight":{"type":"string", "pattern": "^[0-9]{1,12}[.]{0,1}[0-9]{0,4}$"},
+                                            "PackagingTypeDiameter":{"type":"string", "pattern": "^[0-9]{1,12}[.]{0,1}[0-9]{0,4}$"},
+                                            "PackagingTypeDimensionUnit":{"type":"string", "enum":["CMT", "DTM", "KTM", "MMT", "MTR", "FOT", "INH", "SMI", "YRD"]},
+                                            "PackagingTypeWeight":{"type":"string", "pattern": "^[0-9]{1,12}[.]{0,1}[0-9]{0,4}$"},
+                                            "PackagingTypeWeightUnit":{"type":"string", "enum":["GRM", "KGM", "MGM", "TNE", "LTN", "LBR", "ONZ"]},
+                                            "PackagingStackable":{"type":"integer", "minimum": 0}}}},
+                        
+                                    "TradeItemEnclosed":{"type":"array", "items":{
+                                        "type":"object",
+                                        "additionalProperties": false,
+                                        "required": ["SupplierItemNumber", "EnclosedItemQuantity"],
+                                        "properties":{
+                                            "SupplierItemNumber":{"type":"string", "minLength":1, "maxLength":35},
+                                            "ManufacturerItemNumber":{"type":"string", "minLength":1, "maxLength":35},
+                                            "ItemGtin":{"type":"array","uniqueItems":true,"items":{"type":"string", "pattern":"^[0-9]{8,14}$"}},
+                                            "EnclosedItemQuantity":{"type":"integer", "minimum": 1}}}}
+                                                                
+}}}}}}}}}}}}}}

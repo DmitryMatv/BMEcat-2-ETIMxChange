@@ -19,7 +19,7 @@ def remove_namespaces(root):
                 elem.tag = elem.tag.split('}', 1)[1]
     return root
 
-def parse_BMEcat(XML_path):
+def convert_BMEcat(XML_path):
     """
     Parse an ETIM BMEcat XML file and convert it to ETIM xChange JSON format.
 
@@ -1158,7 +1158,6 @@ def clean_json(data):
                 result.append(cleaned_item)
         return result
 
-"""
 
 def load_json_file(file_path):
     try:
@@ -1195,16 +1194,13 @@ def validate_json(instance_path, schema_path):
     except Exception as e:
         raise SystemExit(f"Error during validation: {e}")
 
-"""
 
 
 def convert_file(input_path: str, output_path: str) -> None:
 
-    #print(f"Working with: {input_path}")
-    
-    # JSON_path = input_path.replace('.xml', '.json').replace('.XML', '.JSON')
+    print(f"Working with: {input_path}")
 
-    xChange = parse_BMEcat(input_path)
+    xChange = convert_BMEcat(input_path)
 
     print("Cleaning JSON...")
     xChange_cleaned = clean_json(xChange)
@@ -1218,6 +1214,7 @@ def convert_file(input_path: str, output_path: str) -> None:
 
     print(f"Conversion completed: {output_path}")
     
-    #print("Validating JSON...")
-    #validate_json(JSON_path, args.schema)
-
+    print("Validating JSON...")
+    validate_json(output_path, "xChange_Schema_V1.1-2024-08-23.json")
+    
+    print(f"Processing completed successfully: {output_path}")

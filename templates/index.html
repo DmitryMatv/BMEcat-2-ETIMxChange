@@ -169,7 +169,9 @@
                         a.click();
                         window.URL.revokeObjectURL(url);
 
-                        statusDiv.textContent = 'BMEcat XML successfully converted to xChange JSON';
+                        const originalSizeMB = (file.size / (1024 * 1024)).toFixed(2);
+                        const convertedSizeMB = (blob.size / (1024 * 1024)).toFixed(2);
+                        statusDiv.textContent = `Successfully converted to ${filename} (${convertedSizeMB} MB). Download started.`;
                         statusDiv.className = 'success';
                     });
                 })
