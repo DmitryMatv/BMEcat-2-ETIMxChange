@@ -9,6 +9,11 @@ RUN pip install --no-cache-dir -r requirements.txt
 FROM python:3.13-slim
 WORKDIR /app
 
+# Install curl and wget
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends curl wget && \
+    rm -rf /var/lib/apt/lists/*
+
 # Create a non-root user
 RUN adduser --disabled-password --gecos '' appuser
 
