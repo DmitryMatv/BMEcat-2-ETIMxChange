@@ -35,9 +35,11 @@ def convert_BMEcat(XML_path):
     """
     
     print("Loading BMEcat...")
-    root = etree.parse(XML_path).getroot()
+    # Create a parser that explicitly disables entity resolution
+    parser = etree.XMLParser(resolve_entities=False)
+    ROOT = etree.parse(XML_path, parser).getroot()
     
-    BMECAT = remove_namespaces(root)
+    BMECAT = remove_namespaces(ROOT)
 
     HEADER = BMECAT.find("HEADER")
     CATALOG = BMECAT.find(".//T_NEW_CATALOG")
