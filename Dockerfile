@@ -1,20 +1,16 @@
-# Stage 1: Builder Stage - Installs dependencies
+# Build stage
 FROM python:3.13-slim AS builder
 WORKDIR /app
-
-# Install build dependencies if needed (e.g., for packages with C extensions)
-#RUN apt-get update && apt-get install -y --no-install-recommends build-essential && rm -rf /var/lib/apt/lists/*
-
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 
-# Stage 2: Final Stage - Copies application and dependencies
+# Final stage
 FROM python:3.13-slim
 WORKDIR /app
 
-# Create a non-root user and group
-RUN addgroup --system appuser && adduser --system --group appuser
+# Create a non-root user
+RUN adduser --disabled-password --gecos '' appuser
 
 # Copy installed packages from the builder stage
 COPY --from=builder /usr/local/lib/python3.13/site-packages /usr/local/lib/python3.13/site-packages
@@ -22,10 +18,12 @@ COPY --from=builder /usr/local/lib/python3.13/site-packages /usr/local/lib/pytho
 COPY --from=builder /usr/local/bin /usr/local/bin
 
 # Copy application files and set permissions
-COPY --chown=appuser:appuser . .
+COPY --chown=appuser . .
 
 USER appuser
 
-EXPOSE 5000
+EXPOSE 8000
 
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "5000", "--workers", "2"]
+HEALTHCHECK CMD curl --fail http://localhost:8000/health || exit 1
+
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "4"]

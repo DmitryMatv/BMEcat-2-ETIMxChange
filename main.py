@@ -1,7 +1,7 @@
 import os, tempfile, logging
 from pathlib import Path
 from fastapi import FastAPI, File, UploadFile, BackgroundTasks, HTTPException, Request
-from fastapi.responses import FileResponse, HTMLResponse
+from fastapi.responses import FileResponse, HTMLResponse, JSONResponse
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 from slowapi import Limiter, _rate_limit_exceeded_handler
@@ -36,7 +36,7 @@ app.mount("/static", StaticFiles(directory=BASE_DIR / "static"), name="static")
 
 # Define temp directory for file uploads
 UPLOAD_DIR = Path(tempfile.gettempdir())
-MAX_FILE_SIZE = 50 * 1024 * 1024  # 50 MB
+MAX_FILE_SIZE = 500 * 1024 * 1024  # 500 MB
 
 
 def allowed_file(filename: str) -> bool:
@@ -48,6 +48,16 @@ def allowed_file(filename: str) -> bool:
 @limiter.limit("10/minute")  # Rate limit: 10 requests per minute
 async def index(request: Request):
     return templates.TemplateResponse("index.html", {"request": request})
+
+
+@app.get("/health")
+async def health_check():
+    # Perform checks (e.g., database connection, external services)
+    all_systems_operational = True
+    if all_systems_operational:
+        return JSONResponse(content={"status": "healthy"}, status_code=200)
+    else:
+        return JSONResponse(content={"status": "unhealthy"}, status_code=503)
 
 
 def process_file_sync(input_path: Path, output_path: Path):
@@ -89,8 +99,9 @@ async def convert(
 
     # Use secure_filename for better sanitization
     from werkzeug.utils import secure_filename
+
     filename = secure_filename(file.filename)
-    
+
     input_path = os.path.join(UPLOAD_DIR, filename)
     output_filename = f"{os.path.splitext(filename)[0]}.json"
     output_path = os.path.join(UPLOAD_DIR, output_filename)
@@ -136,7 +147,9 @@ def cleanup_files(input_path, output_path=None):
         pass
 
 
+"""
 if __name__ == "__main__":
     uvicorn.run(
-        "main:app", host="0.0.0.0", port=5000, reload=False
-    )  # reload is useful during development
+        "main:app", host="0.0.0.0", port=5000, reload=True
+    )  # This is for local testing
+"""

@@ -16,7 +16,7 @@ body {
 }
 
 .dropzone.highlight {
-    border-color: #007bff;
+    border-color: #0082ba;
 }
 
 .dropzone p {
@@ -30,7 +30,7 @@ body {
 }
 
 .browse-btn {
-    background-color: #007bff;
+    background-color: #0082ba;
     color: white;
     padding: 10px 20px;
     border: none;
@@ -41,7 +41,7 @@ body {
 }
 
 .browse-btn:hover {
-    background-color: #0069d9;
+    background-color: #2195bd;
 }
 
 #status {
