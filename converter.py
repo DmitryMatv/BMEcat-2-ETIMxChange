@@ -1125,7 +1125,7 @@ def convert_BMEcat(XML_path):
     #xChange["Supplier"].append(Supplier)  
     
     print(f"Finished processing {product_counter} products")
-    root.clear()
+    ROOT.clear()
     return xChange
 
 def clean_json(data):
