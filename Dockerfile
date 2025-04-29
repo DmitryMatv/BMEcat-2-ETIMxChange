@@ -24,6 +24,4 @@ USER appuser
 
 EXPOSE 5001
 
-HEALTHCHECK CMD curl --fail http://localhost:5001/health || exit 1
-
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "5001", "--workers", "4"]
