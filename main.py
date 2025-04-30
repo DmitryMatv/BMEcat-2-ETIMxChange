@@ -11,34 +11,28 @@ from slowapi.errors import RateLimitExceeded
 import uvicorn
 from werkzeug.utils import secure_filename
 import shutil
+import asyncio  # Add asyncio import
 
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
-# Import your converter module
-from converter import convert_file
-
 # Create a limiter instance with a function to get the client's IP address
 limiter = Limiter(key_func=get_remote_address)
 app = FastAPI(title="BMEcat to ETIM xChange Converter")
-
 # Add rate limit exceeded handler
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
-
 BASE_DIR = Path(__file__).parent
-
 # Set up templates directory
 templates = Jinja2Templates(directory=BASE_DIR / "templates")
-
 # Mount static files directory
 app.mount("/static", StaticFiles(directory=BASE_DIR / "static"), name="static")
 
 
 # Define temp directory for file uploads
 UPLOAD_DIR = Path(tempfile.gettempdir())
-MAX_FILE_SIZE = 500 * 1024 * 1024  # 500 MB
+MAX_FILE_SIZE = 100 * 1024 * 1024  # 100 MB
 
 
 def allowed_file(filename: str) -> bool:
@@ -62,25 +56,17 @@ async def health_check():
         return JSONResponse(content={"status": "unhealthy"}, status_code=503)
 
 
-def process_file_sync(input_path: Path, output_path: Path):
-    logger.debug(f"Starting conversion from {input_path} to {output_path}")
-    try:
-        # Call CPU-heavy file processing (synchronous) conversion function
-        convert_file(input_path, output_path)
-        logger.debug(f"Conversion completed, output at {output_path}")
-        logger.debug(f"Output file exists: {os.path.exists(output_path)}")
-    except Exception as e:
-        logger.error(f"Conversion failed with error: {str(e)}")
-        raise
+# Create a semaphore to limit concurrent conversions to 2
+CONVERSION_SEMAPHORE = asyncio.Semaphore(2)
+
+# Import your converter module
+from converter import convert_file
 
 
 @app.post("/convert")
-@limiter.limit("5/minute")  # Rate limit: 5 file uploads per minute
-async def convert(
-    request: Request,
-    file: UploadFile = File(...),
-    background_tasks: BackgroundTasks = None,
-):
+@limiter.limit("5/minute")
+async def convert(request: Request, file: UploadFile = File(...)):
+
     # Check if file exists
     if not file:
         raise HTTPException(status_code=400, detail="No file part")
@@ -91,20 +77,20 @@ async def convert(
 
     # Check file extension
     if not allowed_file(file.filename):
-        raise HTTPException(
-            status_code=400, detail="Invalid file type. Only XML files are accepted."
-        )
+        raise HTTPException(400, "Invalid file type. Only XML files are accepted.")
 
     # Validate file size
     if file.size > MAX_FILE_SIZE:
-        raise HTTPException(400, "File too large (max 50 MB)")
+        raise HTTPException(
+            400, f"File too large (max {MAX_FILE_SIZE // (1024*1024)} MB)"
+        )
 
-    safe_file_name = secure_filename(file.filename)
-    safe_file_path = Path(safe_file_name)  # Create Path object once
+    # Create Path object at once
+    safe_file_name = Path(secure_filename(file.filename))
 
     # Generate unique input path using a temporary file
-    # Suffix from the original (secured) filename
-    input_suffix = safe_file_path.suffix
+    # Suffix from the secured filename
+    input_suffix = safe_file_name.suffix
     with tempfile.NamedTemporaryFile(
         delete=False, suffix=input_suffix, dir=UPLOAD_DIR
     ) as tmp_input_file:
@@ -113,20 +99,29 @@ async def convert(
         # For large files, consider async streaming if shutil becomes a bottleneck
         shutil.copyfileobj(file.file, tmp_input_file)
 
-    # Define output path based on the *original* (secured) filename stem
+    # Define output path based on the *secured* filename stem
     # Output file will be in the same temp directory as the input
-    output_filename = f"{safe_file_path.stem}.json"
+    output_filename = f"{safe_file_name.stem}.json"
     output_path = input_path.with_name(output_filename)
 
     try:
-        # Run conversion in a thread pool to avoid blocking the event loop
-        await run_in_threadpool(
-            process_file_sync, input_path=input_path, output_path=output_path
-        )
+        # Acquire semaphore before starting the threadpool task
+        async with CONVERSION_SEMAPHORE:
+            logger.debug(
+                f"Acquired semaphore for {safe_file_name}. Running conversion."
+            )
+            logger.debug(f"Starting conversion from {input_path} to {output_path}")
+            # Run conversion in a thread pool to avoid blocking the event loop
+            await run_in_threadpool(convert_file, input_path, output_path)
+            logger.debug(f"Conversion completed, output at {output_path}")
+            logger.debug(f"Output file exists: {os.path.exists(output_path)}")
+            logger.debug(f"Conversion OK for {safe_file_name}. Releasing semaphore.")
 
-        if not output_path.exists():  # Use Path object's exists()
+        # Check if output exists *after* the conversion task is done
+        if not output_path.exists():
             raise HTTPException(
-                status_code=500, detail="Conversion failed, output file not created."
+                status_code=500,
+                detail="Conversion failed because no output file created.",
             )
 
         # Schedule cleanup for BOTH input and output files using BackgroundTasks
@@ -137,18 +132,22 @@ async def convert(
         # Return the converted file
         return FileResponse(
             path=str(output_path),
-            filename=output_filename,  # Use the meaningful filename
+            filename=output_filename,
             media_type="application/json",
-            background=cleanup_tasks,  # Pass the tasks object
+            background=cleanup_tasks,
         )
+
     except Exception as e:
-        # Clean up temporary files immediately on error
-        # Use a separate function or call cleanup_file twice if it only handles one path
+        # Cleanup is handled here if an exception occurs *outside* the semaphore block
+        # or if run_in_threadpool itself raises an exception.
         cleanup_file(input_path)
-        if output_path.exists():  # Clean up output if it was partially created
+        if output_path.exists():
             cleanup_file(output_path)
         logger.error(f"Error processing file {safe_file_name}: {str(e)}")
-        raise HTTPException(500, f"Error processing file {safe_file_name}: {str(e)}")
+        raise HTTPException(
+            500,
+            f"XML conversion failed.\nMaybe it is not a (properly formatted) BMEcat?",
+        )
 
 
 def cleanup_file(file_path: Path):
@@ -163,5 +162,5 @@ def cleanup_file(file_path: Path):
 
 if __name__ == "__main__":
     uvicorn.run(
-        "main:app", host="0.0.0.0", port=5000, reload=True
+        "main:app", host="localhost", port=5000, reload=True
     )  # This is for local testing
