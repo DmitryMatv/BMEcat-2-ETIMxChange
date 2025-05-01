@@ -119,10 +119,31 @@ async def convert(request: Request, file: UploadFile = File(...)):
 
         # Check if output exists *after* the conversion task is done
         if not output_path.exists():
+            logger.error(f"Conversion failed: Output file {output_path} not found.")
             raise HTTPException(
                 status_code=500,
                 detail="Conversion failed because no output file created.",
             )
+
+        # --- Add logging to check file content ---
+        try:
+            with open(output_path, "r", encoding="utf-8") as f:
+                # Log the first 200 characters to check if it looks like JSON
+                content_preview = f.read(200)
+                logger.debug(f"Output file preview ({output_path}): {content_preview}")
+                # Optional: Add more robust JSON validation if needed
+                # import json
+                # f.seek(0) # Reset file pointer
+                # json.load(f) # Try to parse the whole file
+        except Exception as read_err:
+            logger.error(
+                f"Error reading or validating output file {output_path}: {read_err}"
+            )
+            raise HTTPException(
+                status_code=500,
+                detail="Conversion produced an invalid or unreadable output file.",
+            )
+        # --- End of added logging ---
 
         # Schedule cleanup for BOTH input and output files using BackgroundTasks
         cleanup_tasks = BackgroundTasks()
@@ -144,9 +165,11 @@ async def convert(request: Request, file: UploadFile = File(...)):
         if output_path.exists():
             cleanup_file(output_path)
         logger.error(f"Error processing file {safe_file_name}: {str(e)}")
-        raise HTTPException(
-            500,
-            f"XML conversion failed.\nMaybe it is not a (properly formatted) BMEcat?",
+        return JSONResponse(
+            status_code=500,
+            content={
+                "detail": f"XML conversion failed. Maybe it is not a (properly formatted) BMEcat? ({str(e)})"
+            },
         )
 
 
