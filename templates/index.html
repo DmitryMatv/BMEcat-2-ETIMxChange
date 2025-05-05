@@ -53,13 +53,23 @@
 
 <body>
     <h2>BMEcat to ETIM xChange Converter 1.0</h2>
-    <p>Upload XML catalog file to convert it to JSON. Your data is not stored.</p>
-
+    <p>Upload XML catalog file to convert it to JSON.</p>
+    <p>The conversion is performed strictly in accordance with the official <a
+            href="https://www.etim-international.com/downloads/?_sft_downloadcategory=xchange" target="_blank">ETIM
+            mapping documentation</a>, which maps xChange fields to ETIM BMEcat fields where possible. For more
+        information about the ETIM xChange format, visit the <a
+            href="https://www.etim-international.com/classification/exchange-format/" target="_blank">ETIM xChange
+            page</a>.
+    </p>
+    <p>Your data is not stored. Uploaded file is permanently deleted from the server as soon as it is processed,
+        regardless of whether the conversion succeeded or failed.</p>
     <div id="drop-zone" class="dropzone">
         <p>Drop your file here or</p>
         <input type="file" id="file-input" accept=".xml,.XML">
         <button class="browse-btn" onclick="document.getElementById('file-input').click()"><b>Upload</b></button>
     </div>
+    <p>Explore the open-source code on <a href="https://github.com/DmitryMatv/BMEcat-2-ETIMxChange"
+            target="_blank">GitHub</a>.</p>
 
     <div id="status"></div>
 
