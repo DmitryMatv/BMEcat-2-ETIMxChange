@@ -1,5 +1,5 @@
 services:
-  converter-app:
+  bmecat-converter-app:
     build: .
     ports:
       - "5001:5001"
@@ -10,7 +10,7 @@ services:
         - curl
         - '-f'
         - 'http://localhost:5001/health'
-      interval: 60s
-      timeout: 10s
+      interval: 10m
+      timeout: 30s
       retries: 3
       start_period: 60s
