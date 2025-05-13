@@ -2,6 +2,10 @@
 FROM python:3.13-alpine AS builder
 WORKDIR /app
 COPY requirements.txt .
+
+# Install build dependencies for C (lxml) and Rust (orjson, jsonschema-rs)
+RUN apk add --no-cache build-base libxml2-dev libxslt-dev python3-dev cargo
+
 RUN pip install --no-cache-dir -r requirements.txt
 
 
@@ -9,9 +13,9 @@ RUN pip install --no-cache-dir -r requirements.txt
 FROM python:3.13-alpine
 WORKDIR /app
 
-# Install curl (for healthcheck) and remove wget
+# Install curl (for healthcheck), runtime libraries for lxml, and libgcc for Rust-based packages
 RUN apk update && \
-    apk add --no-cache curl && \
+    apk add --no-cache curl libxml2 libxslt libgcc && \
     rm -rf /var/cache/apk/*
 
 # Create a non-root user and group
