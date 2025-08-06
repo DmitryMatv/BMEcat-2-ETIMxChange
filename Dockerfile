@@ -1,25 +1,35 @@
 # Build stage
-FROM python:3.13.5-alpine AS builder
+FROM python:3.13.5-slim-bookworm AS builder
 WORKDIR /app
 COPY requirements.txt .
 
 # Install build dependencies for C (lxml) and Rust (orjson, jsonschema-rs)
-RUN apk add --no-cache build-base libxml2-dev libxslt-dev python3-dev cargo
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+    build-essential \
+    libxml2-dev \
+    libxslt1-dev \
+    python3-dev \
+    pkg-config && \
+    rm -rf /var/lib/apt/lists/*
 
 RUN pip install --no-cache-dir -r requirements.txt
 
 
 # Final stage
-FROM python:3.13.5-alpine
+FROM python:3.13.5-slim-bookworm
 WORKDIR /app
 
-# Install curl (for healthcheck), runtime libraries for lxml, and libgcc for Rust-based packages
-RUN apk update && \
-    apk add --no-cache curl libxml2 libxslt libgcc && \
-    rm -rf /var/cache/apk/*
+# Install curl (for healthcheck) and runtime libraries for lxml
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+    curl \
+    libxml2 \
+    libxslt1.1 && \
+    rm -rf /var/lib/apt/lists/*
 
 # Create a non-root user and group
-RUN addgroup -S appgroup && adduser -S -G appgroup appuser
+RUN groupadd -r appgroup && useradd -r -g appgroup appuser
 
 # Copy installed packages from the builder stage
 COPY --from=builder /usr/local/lib/python3.13/site-packages /usr/local/lib/python3.13/site-packages
