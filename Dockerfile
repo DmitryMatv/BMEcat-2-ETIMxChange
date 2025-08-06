@@ -1,5 +1,5 @@
 # Build stage
-FROM python:3.13-alpine AS builder
+FROM python:3.13.5-alpine AS builder
 WORKDIR /app
 COPY requirements.txt .
 
@@ -10,7 +10,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 
 # Final stage
-FROM python:3.13-alpine
+FROM python:3.13.5-alpine
 WORKDIR /app
 
 # Install curl (for healthcheck), runtime libraries for lxml, and libgcc for Rust-based packages

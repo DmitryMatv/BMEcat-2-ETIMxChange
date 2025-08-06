@@ -9,11 +9,13 @@
     <meta name="description"
         content="Convert BMEcat.XML catalog to ETIM xChange.JSON format quickly and easily. Free online tool for catalog data transformation to new ETIM xChange format.">
     <meta name="keywords"
-        content="BMEcat, ETIM, xChange, XML to JSON, bmecat to xchange, file convert, data transform, catalog data">
+        content="BMEcat, ETIM, xChange, XML to JSON, bmecat to xchange, file convert, data transform, catalog data, electrical product catalog, ETIM converter, BMEcat converter">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="author" content="Dmitry Matv">
     <meta name="robots" content="index, follow">
 
-    <link rel="canonical" href="https://classifast.com/">
+    <link rel="canonical" href="https://converter.classifast.com/">
     <link rel="icon" href="/static/images/favicon.ico" type="image/x-icon">
 
     <meta property="og:type" content="website">
@@ -46,19 +48,18 @@
 
     <link rel="stylesheet" href="/static/css/style.css">
 
-    <script defer src="https://umami.classifast.com/script.js"
-        data-website-id="ceb7c97b-b985-47f3-86e9-7f5070ba3cd4"></script>
-
 </head>
 
 <body>
-    <h2>BMEcat to ETIM xChange Converter 1.0</h2>
+    <h1>BMEcat to ETIM xChange Converter 1.0</h1>
     <p>Upload XML catalog file to convert it to JSON.</p>
     <p>The conversion is performed strictly in accordance with the official <a
-            href="https://www.etim-international.com/downloads/?_sft_downloadcategory=xchange" target="_blank">ETIM
+            href="https://www.etim-international.com/downloads/?_sft_downloadcategory=xchange" target="_blank"
+            rel="noopener">ETIM
             mapping documentation</a>, which maps xChange fields to ETIM BMEcat fields where possible. For more
         information about the ETIM xChange format, visit the <a
-            href="https://www.etim-international.com/classification/exchange-format/" target="_blank">ETIM xChange
+            href="https://www.etim-international.com/classification/exchange-format/" target="_blank"
+            rel="noopener">ETIM xChange
             page</a>.
     </p>
     <p>Your data is not stored. Uploaded file is permanently deleted from the server as soon as it is processed,
@@ -68,8 +69,9 @@
         <input type="file" id="file-input" accept=".xml,.XML">
         <button class="browse-btn" onclick="document.getElementById('file-input').click()"><b>Upload</b></button>
     </div>
-    <p>Explore the open-source code on <a href="https://github.com/DmitryMatv/BMEcat-2-ETIMxChange"
-            target="_blank">GitHub</a>.</p>
+    <p>Return to <a href="https://classifast.com/" title="Classifast">homepage</a> or
+        explore the open-source code on <a href="https://github.com/DmitryMatv/BMEcat-2-ETIMxChange" target="_blank"
+            rel="noopener">GitHub</a>.</p>
 
     <div id="status"></div>
 
