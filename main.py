@@ -1,17 +1,20 @@
-import os, tempfile, logging
-from pathlib import Path
-from fastapi import FastAPI, File, UploadFile, BackgroundTasks, HTTPException, Request
-from fastapi.responses import FileResponse, HTMLResponse, JSONResponse
-from fastapi.templating import Jinja2Templates
-from fastapi.staticfiles import StaticFiles
-from fastapi.concurrency import run_in_threadpool
-from slowapi import Limiter, _rate_limit_exceeded_handler
-from slowapi.util import get_remote_address
-from slowapi.errors import RateLimitExceeded
-import uvicorn
-from werkzeug.utils import secure_filename
-import shutil
 import asyncio  # Add asyncio import
+import logging
+import os
+import shutil
+import tempfile
+from pathlib import Path
+
+import uvicorn
+from fastapi import BackgroundTasks, FastAPI, File, HTTPException, Request, UploadFile
+from fastapi.concurrency import run_in_threadpool
+from fastapi.responses import FileResponse, HTMLResponse, JSONResponse
+from fastapi.staticfiles import StaticFiles
+from fastapi.templating import Jinja2Templates
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
+from slowapi.util import get_remote_address
+from werkzeug.utils import secure_filename
 
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
@@ -66,7 +69,6 @@ from converter import convert_file
 @app.post("/convert")
 @limiter.limit("5/minute")
 async def convert(request: Request, file: UploadFile = File(...)):
-
     # Check if file exists
     if not file:
         raise HTTPException(status_code=400, detail="No file part")
@@ -80,9 +82,9 @@ async def convert(request: Request, file: UploadFile = File(...)):
         raise HTTPException(400, "Invalid file type. Only XML files are accepted.")
 
     # Validate file size
-    if file.size > MAX_FILE_SIZE:
+    if file.size is not None and file.size > MAX_FILE_SIZE:
         raise HTTPException(
-            400, f"File too large (max {MAX_FILE_SIZE // (1024*1024)} MB)"
+            400, f"File too large (max {MAX_FILE_SIZE // (1024 * 1024)} MB)"
         )
 
     # Create Path object at once

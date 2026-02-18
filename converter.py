@@ -1,10 +1,8 @@
-import logging
 from typing import Optional
 
+import jsonschema_rs
 import orjson
 from lxml import etree
-import jsonschema_rs
-
 
 
 def remove_namespaces(root):
