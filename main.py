@@ -69,13 +69,9 @@ from converter import convert_file
 @app.post("/convert")
 @limiter.limit("5/minute")
 async def convert(request: Request, file: UploadFile = File(...)):
-    # Check if file exists
-    if not file:
-        raise HTTPException(status_code=400, detail="No file part")
-
-    # Check if filename is empty
-    if file.filename == "":
-        raise HTTPException(status_code=400, detail="No selected file")
+    # Check if filename is empty or missing
+    if not file.filename:
+        raise HTTPException(status_code=400, detail="No file selected")
 
     # Check file extension
     if not allowed_file(file.filename):
