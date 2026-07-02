@@ -1,9 +1,8 @@
-import asyncio  # Add asyncio import
+import asyncio
 import logging
-import os
-import shutil
 import tempfile
 from pathlib import Path
+from typing import Optional
 
 import uvicorn
 from fastapi import BackgroundTasks, FastAPI, File, HTTPException, Request, UploadFile
@@ -15,6 +14,8 @@ from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from slowapi.util import get_remote_address
 from werkzeug.utils import secure_filename
+
+from converter import convert_file
 
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
@@ -36,6 +37,7 @@ app.mount("/static", StaticFiles(directory=BASE_DIR / "static"), name="static")
 # Define temp directory for file uploads
 UPLOAD_DIR = Path(tempfile.gettempdir())
 MAX_FILE_SIZE = 100 * 1024 * 1024  # 100 MB
+UPLOAD_CHUNK_SIZE = 1024 * 1024
 
 
 def allowed_file(filename: str) -> bool:
@@ -43,10 +45,35 @@ def allowed_file(filename: str) -> bool:
     return "." in filename and filename.rsplit(".", 1)[1].lower() == "xml"
 
 
+async def save_upload_file(file: UploadFile, suffix: str) -> Path:
+    input_path: Optional[Path] = None
+
+    try:
+        with tempfile.NamedTemporaryFile(
+            delete=False, suffix=suffix, dir=UPLOAD_DIR
+        ) as tmp_input_file:
+            input_path = Path(tmp_input_file.name)
+            bytes_written = 0
+
+            while chunk := await file.read(UPLOAD_CHUNK_SIZE):
+                bytes_written += len(chunk)
+                if bytes_written > MAX_FILE_SIZE:
+                    raise HTTPException(
+                        413,
+                        f"File too large (max {MAX_FILE_SIZE // (1024 * 1024)} MB)",
+                    )
+                tmp_input_file.write(chunk)
+
+        return input_path
+    except Exception:
+        cleanup_file(input_path)
+        raise
+
+
 @app.get("/", response_class=HTMLResponse)
 @limiter.limit("10/minute")  # Rate limit: 10 requests per minute
 async def index(request: Request):
-    return templates.TemplateResponse("index.html", {"request": request})
+    return templates.TemplateResponse(request=request, name="index.html")
 
 
 @app.get("/health")
@@ -61,9 +88,6 @@ async def health_check():
 
 # Create a semaphore to limit concurrent conversions to 2
 CONVERSION_SEMAPHORE = asyncio.Semaphore(2)
-
-# Import your converter module
-from converter import convert_file
 
 
 @app.post("/convert")
@@ -83,26 +107,18 @@ async def convert(request: Request, file: UploadFile = File(...)):
             400, f"File too large (max {MAX_FILE_SIZE // (1024 * 1024)} MB)"
         )
 
-    # Create Path object at once
     safe_file_name = Path(secure_filename(file.filename))
+    if not safe_file_name.name or safe_file_name.suffix.lower() != ".xml":
+        raise HTTPException(400, "Invalid file name.")
 
-    # Generate unique input path using a temporary file
-    # Suffix from the secured filename
-    input_suffix = safe_file_name.suffix
-    with tempfile.NamedTemporaryFile(
-        delete=False, suffix=input_suffix, dir=UPLOAD_DIR
-    ) as tmp_input_file:
-        input_path = Path(tmp_input_file.name)
-        # Use await for async file operations if available, otherwise stick to sync shutil
-        # For large files, consider async streaming if shutil becomes a bottleneck
-        shutil.copyfileobj(file.file, tmp_input_file)
-
-    # Define output path based on the *secured* filename stem
-    # Output file will be in the same temp directory as the input
     output_filename = f"{safe_file_name.stem}.json"
-    output_path = input_path.with_name(output_filename)
+    input_path: Optional[Path] = None
+    output_path: Optional[Path] = None
 
     try:
+        input_path = await save_upload_file(file, safe_file_name.suffix)
+        output_path = input_path.with_suffix(".json")
+
         # Acquire semaphore before starting the threadpool task
         async with CONVERSION_SEMAPHORE:
             logger.debug(
@@ -112,15 +128,17 @@ async def convert(request: Request, file: UploadFile = File(...)):
             # Run conversion in a thread pool to avoid blocking the event loop
             await run_in_threadpool(convert_file, input_path, output_path)
             logger.debug(f"Conversion completed, output at {output_path}")
-            logger.debug(f"Output file exists: {os.path.exists(output_path)}")
+            logger.debug(f"Output file exists: {output_path.exists()}")
             logger.debug(f"Conversion OK for {safe_file_name}. Releasing semaphore.")
 
         # Check if output exists *after* the conversion task is done
-        if not output_path.exists():
-            logger.error(f"Conversion failed: Output file {output_path} not found.")
+        if not output_path.is_file() or output_path.stat().st_size == 0:
+            logger.error(
+                f"Conversion failed: Output file {output_path} is missing or empty."
+            )
             raise HTTPException(
                 status_code=500,
-                detail="Conversion failed because no output file created.",
+                detail="Conversion failed because no output file was created.",
             )
 
         # --- Add logging to check file content ---
@@ -156,12 +174,15 @@ async def convert(request: Request, file: UploadFile = File(...)):
             background=cleanup_tasks,
         )
 
+    except HTTPException:
+        cleanup_file(input_path)
+        cleanup_file(output_path)
+        raise
     except Exception as e:
         # Cleanup is handled here if an exception occurs *outside* the semaphore block
         # or if run_in_threadpool itself raises an exception.
         cleanup_file(input_path)
-        if output_path.exists():
-            cleanup_file(output_path)
+        cleanup_file(output_path)
         logger.error(f"Error processing file {safe_file_name}: {str(e)}")
         return JSONResponse(
             status_code=500,
@@ -169,12 +190,14 @@ async def convert(request: Request, file: UploadFile = File(...)):
                 "detail": f"XML conversion failed. Maybe it is not a (properly formatted) BMEcat? ({str(e)})"
             },
         )
+    finally:
+        await file.close()
 
 
-def cleanup_file(file_path: Path):
+def cleanup_file(file_path: Optional[Path]):
     try:
         if file_path and file_path.exists():
-            os.remove(file_path)
+            file_path.unlink()
             logger.debug(f"Cleaned up temporary file: {file_path}")
     except Exception as e:
         logger.error(f"Error cleaning up file {file_path}: {e}")

@@ -35,7 +35,9 @@ def convert_BMEcat(XML_path):
 
     print("Loading BMEcat...")
     # Create a parser that explicitly disables entity resolution
-    parser = etree.XMLParser(resolve_entities=False)
+    parser = etree.XMLParser(
+        resolve_entities=False, no_network=True, recover=False, huge_tree=False
+    )
     ROOT = etree.parse(XML_path, parser).getroot()
 
     BMECAT = remove_namespaces(ROOT)
@@ -68,9 +70,9 @@ def convert_BMEcat(XML_path):
                 return None
 
             # Handling val_type
-            if val_type == bool:
+            if val_type is bool:
                 return element.lower() == "true"
-            if val_type == int:
+            if val_type is int:
                 return int(element) if element else None
 
             return element
@@ -123,9 +125,9 @@ def convert_BMEcat(XML_path):
                 return None
 
             # Handling val_type
-            if val_type == bool:
+            if val_type is bool:
                 return element.lower() == "true"
-            if val_type == int:
+            if val_type is int:
                 return int(element) if element else None
 
             return element
@@ -1541,17 +1543,20 @@ def validate_json(instance_path, schema_path):
     except Exception as e:
         raise SystemExit(f"Invalid schema: {e}")
 
-    # Perform validation
     try:
-        validator.validate(instance_data)
-        print(f"{instance_path} is valid against schema {schema_path}")
-    except jsonschema_rs.ValidationError as e:
-        for error in validator.iter_errors(instance_data):
-            print(f"Error: {error.message}")
-            print(f"Location: {error.instance_path}")
-            print(f"Location in schema: {error.schema_path}\n")
+        errors = list(validator.iter_errors(instance_data))
     except Exception as e:
         raise SystemExit(f"Error during validation: {e}")
+
+    if not errors:
+        print(f"{instance_path} is valid against schema {schema_path}")
+        return
+
+    for error in errors:
+        print(f"Error: {error.message}")
+        print(f"Location: {error.instance_path}")
+        print(f"Location in schema: {error.schema_path}\n")
+    raise ValueError(f"JSON validation failed with {len(errors)} error(s)")
 
 
 def convert_file(input_path: str, output_path: str) -> None:

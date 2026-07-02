@@ -1,42 +1,39 @@
-# Build stage
-FROM python:3.13.5-slim-bookworm AS builder
-WORKDIR /app
-COPY requirements.txt .
+FROM python:3.14-alpine AS builder
 
-# Install build dependencies for C (lxml) and Rust (orjson, jsonschema-rs)
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
-    build-essential \
+ENV PIP_NO_CACHE_DIR=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    VIRTUAL_ENV=/opt/venv \
+    PATH="/opt/venv/bin:$PATH"
+
+WORKDIR /app
+
+RUN apk add --no-cache \
+    build-base \
+    cargo \
     libxml2-dev \
-    libxslt1-dev \
-    python3-dev \
-    pkg-config && \
-    rm -rf /var/lib/apt/lists/*
+    libxslt-dev \
+    rust
 
-RUN pip install --no-cache-dir -r requirements.txt
+RUN python -m venv "$VIRTUAL_ENV"
 
+COPY requirements.txt .
+RUN pip install --root-user-action=ignore -r requirements.txt
 
-# Final stage
-FROM python:3.13.5-slim-bookworm
+FROM python:3.14-alpine
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    VIRTUAL_ENV=/opt/venv \
+    PATH="/opt/venv/bin:$PATH"
+
 WORKDIR /app
 
-# Install curl (for healthcheck) and runtime libraries for lxml
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
-    curl \
-    libxml2 \
-    libxslt1.1 && \
-    rm -rf /var/lib/apt/lists/*
+RUN apk add --no-cache curl libxml2 libxslt && \
+    addgroup -S appgroup && \
+    adduser -S -G appgroup appuser
 
-# Create a non-root user and group
-RUN groupadd -r appgroup && useradd -r -g appgroup appuser
-
-# Copy installed packages from the builder stage
-COPY --from=builder /usr/local/lib/python3.13/site-packages /usr/local/lib/python3.13/site-packages
-# Copy executables (like uvicorn) from the builder stage's bin directory
-COPY --from=builder /usr/local/bin /usr/local/bin
-
-# Copy application files and set permissions
+COPY --from=builder /opt/venv /opt/venv
 COPY --chown=appuser:appgroup . .
 
 USER appuser
