@@ -178,9 +178,15 @@ async def convert(request: Request, file: UploadFile = File(...)):
         cleanup_file(input_path)
         cleanup_file(output_path)
         raise
+    except ValueError as e:
+        cleanup_file(input_path)
+        cleanup_file(output_path)
+        logger.error(f"Validation failed for {safe_file_name}: {str(e)}")
+        return JSONResponse(
+            status_code=422,
+            content={"detail": f"File validation failed: {str(e)}"},
+        )
     except Exception as e:
-        # Cleanup is handled here if an exception occurs *outside* the semaphore block
-        # or if run_in_threadpool itself raises an exception.
         cleanup_file(input_path)
         cleanup_file(output_path)
         logger.error(f"Error processing file {safe_file_name}: {str(e)}")
